@@ -1,0 +1,51 @@
+package com.intuit.sportseventsregistration.services;
+
+import com.intuit.sportseventsregistration.entities.Event;
+import com.intuit.sportseventsregistration.entities.EventRegistration;
+import com.intuit.sportseventsregistration.entities.User;
+import com.intuit.sportseventsregistration.exceptions.EventException;
+import com.intuit.sportseventsregistration.exceptions.UserException;
+import com.intuit.sportseventsregistration.repository.EventRegistrationRepository;
+import com.intuit.sportseventsregistration.repository.EventRepository;
+import com.intuit.sportseventsregistration.repository.UserRepository;
+import com.intuit.sportseventsregistration.utils.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class EventServiceImpl implements EventService{
+
+    @Autowired
+    EventRepository eventRepository;
+    @Autowired
+    EventRegistrationRepository eventRegistrationRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Override
+    public List<Event> getAllEvents() {
+        try{
+            return eventRepository.findAll();
+        } catch (Exception ex){
+            throw new EventException(String.format(Constants.EVENTS_ERROR_MESSAGE, ex.getMessage()));
+        }
+    }
+
+    @Override
+    public List<Event> getAllUserRegisteredEvents(String username) {
+        try {
+            Optional<User> user = userRepository.findByUsername(username);
+            if(user.isPresent()) {
+                List<EventRegistration> eventRegistrations = eventRegistrationRepository.findAllByUser(user.get());
+                return eventRegistrations.stream().map(EventRegistration::getEvent)
+                        .toList();
+            }else{
+                throw new UserException(String.format(Constants.USER_EVENTS_ERROR_MESSAGE,username));
+            }
+        }catch (Exception ex){
+            throw new EventException(String.format(Constants.USER_EVENTS_ERROR_MESSAGE, username));
+        }
+    }
+}
