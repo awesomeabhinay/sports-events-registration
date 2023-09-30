@@ -5,7 +5,11 @@ import com.intuit.sportseventsregistration.entities.EventRegistration;
 import com.intuit.sportseventsregistration.entities.User;
 import com.intuit.sportseventsregistration.exceptions.EventException;
 import com.intuit.sportseventsregistration.repository.EventRegistrationRepository;
+import com.intuit.sportseventsregistration.repository.EventRepository;
 import com.intuit.sportseventsregistration.repository.UserRepository;
+import com.intuit.sportseventsregistration.requests.EventRegistrationRequest;
+import com.intuit.sportseventsregistration.requests.EventUnregisterRequest;
+import com.intuit.sportseventsregistration.responses.EventRegistrationResponse;
 import com.intuit.sportseventsregistration.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,33 +23,58 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
     EventRegistrationRepository eventRegistrationRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    EventRepository eventRepository;
     @Override
-    public EventRegistration registerEvent(EventRegistration eventRegistration) {
+    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) {
         try{
-            Optional<User> user = userRepository.findByUsername(eventRegistration.getUser().getUsername());
+            Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
-            if(!checkIfUserCanRegisterMore(user.get())){
+            if(user.isPresent() && !checkIfUserCanRegisterMore(user.get())){
                 throw new EventException("User already registered for 3 events");
             }
-            return eventRegistrationRepository.save(eventRegistration);
+            EventRegistration  eventRegistration= createEventRegistration(user.get(), eventRegistrationRequest);
+            return successFullEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
         } catch (Exception e){
-            throw new EventException(String.format(Constants.EVENT_REGISTRATION_ERROR_MESSAGE, eventRegistration));
+            throw new EventException(String.format(Constants.EVENT_REGISTRATION_ERROR_MESSAGE, eventRegistrationRequest.getEventId()));
         }
     }
 
+    private EventRegistrationResponse successFullEventRegistrationResponse(EventRegistration eventRegistration) {
+        return new EventRegistrationResponse(eventRegistration.getId(), eventRegistration.getEvent().getId(), eventRegistration.getUser().getUsername());
+    }
+
+    private EventRegistration createEventRegistration(User user, EventRegistrationRequest eventRegistrationRequest) {
+        EventRegistration eventRegistration = new EventRegistration();
+        eventRegistration.setUser(user);
+        eventRegistration.setEvent(eventRepository.getReferenceById(eventRegistrationRequest.getEventId()));
+        return eventRegistration;
+    }
+
     @Override
-    public String unregisterEvent(int registrationId) {
+    public String unregisterEvent(EventUnregisterRequest eventUnregisterRequest) {
         try{
-            Optional<EventRegistration> eventRegistration = eventRegistrationRepository.findById(registrationId);
-            if(eventRegistration.isPresent()){
-                eventRegistrationRepository.delete(eventRegistration.get());
-                return String.format("Event %s unregistered for %s",eventRegistration.get().getEvent().getEventName(),
-                        eventRegistration.get().getUser().getUsername());
+
+            EventRegistration eventRegistration = fetchEventRegistration(eventUnregisterRequest);
+            if(eventRegistration!=null){
+                eventRegistrationRepository.delete(eventRegistration);
+                return String.format("Event %s unregistered for %s",eventRegistration.getEvent().getEventName(),
+                        eventRegistration.getUser().getUsername());
             } else{
-                throw new EventException(String.format(Constants.EVENT_NOT_FOUND, registrationId));
+                throw new EventException(String.format(Constants.EVENT_NOT_FOUND, eventUnregisterRequest.getEventId()));
             }
         } catch (Exception ex){
-            throw new EventException(String.format(Constants.EVENT_UNREGISTRATION_ERROR_MESSAGE, registrationId));
+            throw new EventException(String.format(Constants.EVENT_UNREGISTRATION_ERROR_MESSAGE, eventUnregisterRequest.getEventId()));
+        }
+    }
+
+    private EventRegistration fetchEventRegistration(EventUnregisterRequest eventUnregisterRequest) {
+        Optional<User> user = userRepository.findByUsername(eventUnregisterRequest.getUsername());
+        Optional<Event> event = eventRepository.findById(eventUnregisterRequest.getEventId());
+        if(user.isPresent() && event.isPresent()){
+            return eventRegistrationRepository.findByEventAndUser(event.get(), user.get());
+        } else {
+            return null;
         }
     }
 

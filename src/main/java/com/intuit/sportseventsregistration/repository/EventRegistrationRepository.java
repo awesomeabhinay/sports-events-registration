@@ -1,5 +1,6 @@
 package com.intuit.sportseventsregistration.repository;
 
+import com.intuit.sportseventsregistration.entities.Event;
 import com.intuit.sportseventsregistration.entities.EventRegistration;
 import com.intuit.sportseventsregistration.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,6 @@ import java.util.List;
 public interface EventRegistrationRepository extends JpaRepository<EventRegistration, Integer> {
     int countByUser(User user);
     List<EventRegistration> findAllByUser(User user);
+
+    EventRegistration findByEventAndUser(Event event, User user);
 }
