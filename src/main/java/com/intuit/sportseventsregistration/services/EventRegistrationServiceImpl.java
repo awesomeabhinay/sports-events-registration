@@ -4,6 +4,7 @@ import com.intuit.sportseventsregistration.entities.Event;
 import com.intuit.sportseventsregistration.entities.EventRegistration;
 import com.intuit.sportseventsregistration.entities.User;
 import com.intuit.sportseventsregistration.exceptions.EventException;
+import com.intuit.sportseventsregistration.exceptions.SportsEventRegistrationException;
 import com.intuit.sportseventsregistration.repository.EventRegistrationRepository;
 import com.intuit.sportseventsregistration.repository.EventRepository;
 import com.intuit.sportseventsregistration.repository.UserRepository;
@@ -31,12 +32,12 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
             Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
             if(user.isPresent() && !checkIfUserCanRegisterMore(user.get())){
-                throw new EventException("User already registered for 3 events");
+                throw new SportsEventRegistrationException("User already registered for 3 events");
             }
             EventRegistration  eventRegistration= createEventRegistration(user.get(), eventRegistrationRequest);
             return successFullEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
         } catch (Exception e){
-            throw new EventException(String.format(Constants.EVENT_REGISTRATION_ERROR_MESSAGE, eventRegistrationRequest.getEventId()));
+            throw new SportsEventRegistrationException(String.format(Constants.EVENT_REGISTRATION_ERROR_MESSAGE, eventRegistrationRequest.getEventId()));
         }
     }
 

@@ -26,7 +26,15 @@ CREATE TABLE events (
 INSERT INTO events (event_name, event_category, start_time, end_time) VALUES
                                                                      ('Event 1', 'Category A', '2023-10-01 10:00:00', '2023-10-01 12:00:00'),
                                                                      ('Event 2', 'Category B', '2023-10-02 14:00:00', '2023-10-02 16:00:00'),
-                                                                     ('Event 3', 'Category A', '2023-10-03 09:00:00', '2023-10-03 11:00:00');
+                                                                     ('Event 3', 'Category A', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 4', 'Category C', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 5', 'Category D', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 6', 'Category A', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 7', 'Category B', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 8', 'Category C', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 9', 'Category C', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 10', 'Category C', '2023-10-03 09:00:00', '2023-10-03 11:00:00'),
+                                                                     ('Event 11', 'Category B', '2023-10-03 09:00:00', '2023-10-03 11:00:00');
 
 -- Create table for EventRegistration entity
 DROP TABLE IF EXISTS event_registration;

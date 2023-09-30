@@ -2,6 +2,8 @@ package com.intuit.sportseventsregistration.controllers;
 
 import com.intuit.sportseventsregistration.entities.Event;
 import com.intuit.sportseventsregistration.exceptions.EventException;
+import com.intuit.sportseventsregistration.exceptions.SportsEventRegistrationException;
+import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.services.EventService;
 import com.intuit.sportseventsregistration.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,7 @@ public class EventController {
             List<Event> events = eventService.getAllEvents();
             return ResponseEntity.status(HttpStatus.OK).body(events);
         } catch (Exception ex){
-            throw new EventException(String.format(Constants.EVENTS_ERROR_MESSAGE, ex.getMessage()));
+            throw new SportsEventRegistrationException(String.format(Constants.EVENTS_ERROR_MESSAGE, ex.getMessage()));
         }
     }
 
@@ -34,11 +36,10 @@ public class EventController {
         try{
             List<Event> events = eventService.getAllUserRegisteredEvents(username);
             return ResponseEntity.status(HttpStatus.OK).body(events);
-        } catch (Exception ex){
-            throw new EventException(String.format(Constants.EVENTS_ERROR_MESSAGE, ex.getMessage()));
+        } catch (UserException ex) {
+            throw new SportsEventRegistrationException("User not found: " + ex.getMessage());
+        } catch (Exception ex) {
+            throw new SportsEventRegistrationException("Error fetching user events: " + ex.getMessage());
         }
     }
-
-
-
 }
