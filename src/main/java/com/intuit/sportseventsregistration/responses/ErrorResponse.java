@@ -7,5 +7,4 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    // Getter and setter methods
 }
