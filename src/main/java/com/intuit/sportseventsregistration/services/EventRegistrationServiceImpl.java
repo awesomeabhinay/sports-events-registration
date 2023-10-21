@@ -38,7 +38,7 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
                 .orElseThrow(() -> new EventException("Event not found"));
 
         if (hasConflicts(user.get(), eventToRegister)) {
-            throw new EventException("Event registration conflicts with existing events");
+            throw new EventException("Event registration conflicts with existing registered event.");
         }
 
         EventRegistration eventRegistration = createEventRegistration(user.get(), eventRegistrationRequest);
