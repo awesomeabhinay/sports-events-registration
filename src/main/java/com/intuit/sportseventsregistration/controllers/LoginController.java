@@ -5,6 +5,7 @@ import com.intuit.sportseventsregistration.exceptions.LoginException;
 import com.intuit.sportseventsregistration.requests.LoginRequest;
 import com.intuit.sportseventsregistration.services.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,11 +18,13 @@ public class LoginController {
     @Autowired
     LoginService loginService;
     @PostMapping("login")
-    public ResponseEntity<User> loginUser(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest){
         try{
             return ResponseEntity.ok(loginService.loginUser(loginRequest));
+        } catch (LoginException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception ex){
-            throw new LoginException("username is not valid");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Exception while login.");
         }
     }
 }

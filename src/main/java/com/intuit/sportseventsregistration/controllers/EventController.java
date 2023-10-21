@@ -1,11 +1,8 @@
 package com.intuit.sportseventsregistration.controllers;
 
 import com.intuit.sportseventsregistration.entities.Event;
-import com.intuit.sportseventsregistration.exceptions.EventException;
-import com.intuit.sportseventsregistration.exceptions.SportsEventRegistrationException;
 import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.services.EventService;
-import com.intuit.sportseventsregistration.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,24 +19,24 @@ public class EventController {
     EventService eventService;
 
     @GetMapping("events/all")
-    public ResponseEntity<List<Event>> getAllEvents(){
+    public ResponseEntity<?> getAllEvents(){
         try{
             List<Event> events = eventService.getAllEvents();
             return ResponseEntity.status(HttpStatus.OK).body(events);
-        } catch (Exception ex){
-            throw new SportsEventRegistrationException(String.format(Constants.EVENTS_ERROR_MESSAGE, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Exception in fetching events");
         }
     }
 
     @GetMapping("events/{username}")
-    public ResponseEntity<List<Event>> getUserRegistered(@PathVariable String username){
+    public ResponseEntity<?> getUserRegistered(@PathVariable String username){
         try{
             List<Event> events = eventService.getAllUserRegisteredEvents(username);
             return ResponseEntity.status(HttpStatus.OK).body(events);
         } catch (UserException ex) {
-            throw new SportsEventRegistrationException("User not found: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found with username: " + username);
         } catch (Exception ex) {
-            throw new SportsEventRegistrationException("Error fetching user events: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Exception while fetching user events");
         }
     }
 }

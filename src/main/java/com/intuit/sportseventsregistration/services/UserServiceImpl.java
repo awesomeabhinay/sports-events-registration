@@ -16,14 +16,10 @@ public class UserServiceImpl implements UserService{
     UserRepository userRepository;
     @Override
     public User createUser(User user) {
-        try{
-            if(!checkIfUserExist(user.getUsername())){
-                return userRepository.save(user);
-            } else{
-                throw new UserException(String.format("User eith %s username already exist",user.getUsername()));
-            }
-        } catch (Exception ex){
-            throw new UserException(String.format(Constants.USER_CREATION_ERROR_MESSAGE, user.getUsername()));
+        if(!checkIfUserExist(user.getUsername())){
+            return userRepository.save(user);
+        } else{
+            throw new UserException(String.format("User with %s username already exist",user.getUsername()));
         }
     }
 

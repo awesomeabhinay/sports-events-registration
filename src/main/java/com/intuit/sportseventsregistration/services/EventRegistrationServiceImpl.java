@@ -4,7 +4,6 @@ import com.intuit.sportseventsregistration.entities.Event;
 import com.intuit.sportseventsregistration.entities.EventRegistration;
 import com.intuit.sportseventsregistration.entities.User;
 import com.intuit.sportseventsregistration.exceptions.EventException;
-import com.intuit.sportseventsregistration.exceptions.SportsEventRegistrationException;
 import com.intuit.sportseventsregistration.repository.EventRegistrationRepository;
 import com.intuit.sportseventsregistration.repository.EventRepository;
 import com.intuit.sportseventsregistration.repository.UserRepository;
@@ -15,7 +14,9 @@ import com.intuit.sportseventsregistration.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventRegistrationServiceImpl implements EventRegistrationService{
@@ -27,19 +28,41 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
     @Autowired
     EventRepository eventRepository;
     @Override
-    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) {
-        try{
-            Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
+    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) throws Exception {
+        Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
-            if(user.isPresent() && !checkIfUserCanRegisterMore(user.get())){
-                throw new SportsEventRegistrationException("User already registered for 3 events");
-            }
-            EventRegistration  eventRegistration= createEventRegistration(user.get(), eventRegistrationRequest);
-            return successFullEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
-        } catch (Exception e){
-            throw new SportsEventRegistrationException(String.format(Constants.EVENT_REGISTRATION_ERROR_MESSAGE, eventRegistrationRequest.getEventId()));
+        if (user.isPresent() && !checkIfUserCanRegisterMore(user.get())) {
+            throw new EventException("User already registered for 3 events");
         }
+        Event eventToRegister = eventRepository.findById(eventRegistrationRequest.getEventId())
+                .orElseThrow(() -> new EventException("Event not found"));
+
+        if (hasConflicts(user.get(), eventToRegister)) {
+            throw new EventException("Event registration conflicts with existing events");
+        }
+
+        EventRegistration eventRegistration = createEventRegistration(user.get(), eventRegistrationRequest);
+        return successFullEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
     }
+
+    private boolean hasConflicts(User user, Event eventToRegister) {
+        List<Event> userRegisteredEvents = eventRegistrationRepository.findAllByUser(user)
+                .stream()
+                .map(EventRegistration::getEvent)
+                .collect(Collectors.toList());
+        for (Event registeredEvent : userRegisteredEvents) {
+            if (doEventsOverlap(eventToRegister, registeredEvent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean doEventsOverlap(Event event1, Event event2) {
+        return event1.getEndTime().isAfter(event2.getStartTime()) &&
+                event2.getEndTime().isAfter(event1.getStartTime());
+    }
+
 
     private EventRegistrationResponse successFullEventRegistrationResponse(EventRegistration eventRegistration) {
         return new EventRegistrationResponse(eventRegistration.getId(), eventRegistration.getEvent().getId(), eventRegistration.getUser().getUsername());
@@ -54,18 +77,13 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
 
     @Override
     public String unregisterEvent(EventUnregisterRequest eventUnregisterRequest) {
-        try{
-
-            EventRegistration eventRegistration = fetchEventRegistration(eventUnregisterRequest);
-            if(eventRegistration!=null){
-                eventRegistrationRepository.delete(eventRegistration);
-                return String.format("Event %s unregistered for %s",eventRegistration.getEvent().getEventName(),
-                        eventRegistration.getUser().getUsername());
-            } else{
-                throw new EventException(String.format(Constants.EVENT_NOT_FOUND, eventUnregisterRequest.getEventId()));
-            }
-        } catch (Exception ex){
-            throw new EventException(String.format(Constants.EVENT_UNREGISTRATION_ERROR_MESSAGE, eventUnregisterRequest.getEventId()));
+        EventRegistration eventRegistration = fetchEventRegistration(eventUnregisterRequest);
+        if(eventRegistration!=null){
+            eventRegistrationRepository.delete(eventRegistration);
+            return String.format("Event %s unregistered for %s",eventRegistration.getEvent().getEventName(),
+                    eventRegistration.getUser().getUsername());
+        } else {
+            throw new EventException(String.format(Constants.EVENT_NOT_FOUND, eventUnregisterRequest.getEventId()));
         }
     }
 

@@ -26,26 +26,18 @@ public class EventServiceImpl implements EventService{
     UserRepository userRepository;
     @Override
     public List<Event> getAllEvents() {
-        try{
-            return eventRepository.findAll();
-        } catch (Exception ex){
-            throw new EventException(String.format(Constants.EVENTS_ERROR_MESSAGE, ex.getMessage()));
-        }
+        return eventRepository.findAll();
     }
 
     @Override
     public List<Event> getAllUserRegisteredEvents(String username) {
-        try {
-            Optional<User> user = userRepository.findByUsername(username);
-            if(user.isPresent()) {
-                List<EventRegistration> eventRegistrations = eventRegistrationRepository.findAllByUser(user.get());
-                return eventRegistrations.stream().map(EventRegistration::getEvent)
-                        .toList();
-            }else{
-                throw new UserException(String.format(Constants.USER_EVENTS_ERROR_MESSAGE,username));
-            }
-        }catch (Exception ex){
-            throw new EventException(String.format(Constants.USER_EVENTS_ERROR_MESSAGE, username));
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isPresent()) {
+            List<EventRegistration> eventRegistrations = eventRegistrationRepository.findAllByUser(user.get());
+            return eventRegistrations.stream().map(EventRegistration::getEvent)
+                    .toList();
+        }else{
+            throw new UserException(username);
         }
     }
 }

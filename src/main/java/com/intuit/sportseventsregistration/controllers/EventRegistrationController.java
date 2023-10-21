@@ -1,8 +1,7 @@
 package com.intuit.sportseventsregistration.controllers;
 
-import com.intuit.sportseventsregistration.entities.EventRegistration;
 import com.intuit.sportseventsregistration.exceptions.EventException;
-import com.intuit.sportseventsregistration.exceptions.SportsEventRegistrationException;
+import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.requests.EventRegistrationRequest;
 import com.intuit.sportseventsregistration.requests.EventUnregisterRequest;
 import com.intuit.sportseventsregistration.responses.EventRegistrationResponse;
@@ -20,20 +19,24 @@ public class EventRegistrationController {
     EventRegistrationService eventRegistrationService;
 
     @PostMapping("event/register")
-    public ResponseEntity<EventRegistrationResponse> registerEventForUser(@RequestBody EventRegistrationRequest eventRegistrationRequest){
+    public ResponseEntity<?> registerEventForUser(@RequestBody EventRegistrationRequest eventRegistrationRequest){
         try{
             return ResponseEntity.status(HttpStatus.CREATED).body(eventRegistrationService.registerEvent(eventRegistrationRequest));
-        }catch (Exception ex){
-            throw new SportsEventRegistrationException(String.format(Constants.EVENT_REGISTRATION_ERROR_MESSAGE, eventRegistrationRequest.getEventId()));
+        }catch (EventException eventException){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(eventException.getMessage());
+        } catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Exception while registering for event.");
         }
     }
 
     @DeleteMapping("event/unregister")
-    public ResponseEntity<String> unregisterEventForUser(@RequestBody EventUnregisterRequest eventUnregisterRequest){
+    public ResponseEntity<?> unregisterEventForUser(@RequestBody EventUnregisterRequest eventUnregisterRequest){
         try{
             return ResponseEntity.status(HttpStatus.CREATED).body(eventRegistrationService.unregisterEvent(eventUnregisterRequest));
-        }catch (Exception ex){
-            throw new SportsEventRegistrationException(String.format(Constants.EVENT_UNREGISTRATION_ERROR_MESSAGE, eventUnregisterRequest.getEventId()));
+        }catch (EventException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Exception while unregistering for event.");
         }
     }
 }

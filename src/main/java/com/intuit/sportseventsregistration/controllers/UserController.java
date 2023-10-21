@@ -18,11 +18,13 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/create/user")
-    public ResponseEntity<User> createUser(@RequestBody User user){
+    public ResponseEntity<?> createUser(@RequestBody User user){
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+        } catch (UserException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception ex){
-            throw new UserException(String.format(Constants.USER_CREATION_ERROR_MESSAGE,user.getUsername()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Exception while creating user.");
         }
     }
 }

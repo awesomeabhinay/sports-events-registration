@@ -18,15 +18,11 @@ public class LoginServiceImpl implements LoginService{
 
     @Override
     public User loginUser(LoginRequest loginRequest) {
-        try{
-            Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
-            if(user.isPresent()){
-                return user.get();
-            } else{
-                throw new LoginException(String.format("User not found with username: %s", loginRequest.getUsername()));
-            }
-        } catch (Exception ex){
-            throw new LoginException(String.format(Constants.LOGIN_ERROR_MESSAGE, loginRequest.getUsername()));
+        Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
+        if(user.isPresent()){
+            return user.get();
+        } else{
+            throw new LoginException(String.format("User not found with username: %s", loginRequest.getUsername()));
         }
     }
 }
