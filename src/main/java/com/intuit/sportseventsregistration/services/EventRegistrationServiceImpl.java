@@ -4,6 +4,7 @@ import com.intuit.sportseventsregistration.entities.Event;
 import com.intuit.sportseventsregistration.entities.EventRegistration;
 import com.intuit.sportseventsregistration.entities.User;
 import com.intuit.sportseventsregistration.exceptions.EventException;
+import com.intuit.sportseventsregistration.mapper.EventRegistrationMapper;
 import com.intuit.sportseventsregistration.repository.EventRegistrationRepository;
 import com.intuit.sportseventsregistration.repository.EventRepository;
 import com.intuit.sportseventsregistration.repository.UserRepository;
@@ -21,18 +22,24 @@ import java.util.stream.Collectors;
 @Service
 public class EventRegistrationServiceImpl implements EventRegistrationService{
 
+    private final EventRegistrationRepository eventRegistrationRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final EventRegistrationMapper eventRegistrationMapper;
     @Autowired
-    EventRegistrationRepository eventRegistrationRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    EventRepository eventRepository;
+    public EventRegistrationServiceImpl(EventRegistrationRepository eventRegistrationRepository, EventRepository eventRepository,
+                                        UserRepository userRepository, EventRegistrationMapper eventRegistrationMapper){
+        this.eventRegistrationRepository = eventRegistrationRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+        this.eventRegistrationMapper = eventRegistrationMapper;
+    }
     @Override
     public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) throws Exception {
         Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
         if (user.isPresent() && !checkIfUserCanRegisterMore(user.get())) {
-            throw new EventException("User already registered for 3 events");
+            throw new EventException("Participants can only register for maximum of " + Constants.MAX_REGISTRATION_LIMIT + " events");
         }
         Event eventToRegister = eventRepository.findById(eventRegistrationRequest.getEventId())
                 .orElseThrow(() -> new EventException("Event not found"));
@@ -41,8 +48,8 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
             throw new EventException("Event registration conflicts with existing registered event.");
         }
 
-        EventRegistration eventRegistration = createEventRegistration(user.get(), eventRegistrationRequest);
-        return successFullEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
+        EventRegistration eventRegistration = eventRegistrationMapper.toDto(eventToRegister, user.get());
+        return eventRegistrationMapper.toEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
     }
 
     private boolean hasConflicts(User user, Event eventToRegister) {

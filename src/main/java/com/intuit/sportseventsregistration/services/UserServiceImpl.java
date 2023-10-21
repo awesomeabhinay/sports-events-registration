@@ -2,6 +2,7 @@ package com.intuit.sportseventsregistration.services;
 
 import com.intuit.sportseventsregistration.entities.User;
 import com.intuit.sportseventsregistration.exceptions.UserException;
+import com.intuit.sportseventsregistration.mapper.UserMapper;
 import com.intuit.sportseventsregistration.repository.UserRepository;
 import com.intuit.sportseventsregistration.responses.UserResponse;
 import com.intuit.sportseventsregistration.utils.Constants;
@@ -13,13 +14,18 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService{
 
+
+    private UserRepository userRepository;
+    private UserMapper userMapper;
     @Autowired
-    UserRepository userRepository;
+    UserServiceImpl(UserRepository userRepository, UserMapper userMapper){
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+    }
     @Override
     public UserResponse createUser(User user) {
         if(!checkIfUserExist(user.getUsername())){
-            User user1 = userRepository.save(user);
-            return UserResponse.builder().username(user1.getUsername()).email(user1.getEmail()).build();
+            return userMapper.toUserResponse(userRepository.save(user));
         } else{
             throw new UserException(String.format("User with %s username already exist",user.getUsername()));
         }
