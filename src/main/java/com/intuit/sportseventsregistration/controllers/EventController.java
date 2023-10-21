@@ -1,6 +1,6 @@
 package com.intuit.sportseventsregistration.controllers;
 
-import com.intuit.sportseventsregistration.entities.Event;
+import com.intuit.sportseventsregistration.dto.Event;
 import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.services.EventService;
 import org.springframework.beans.factory.annotation.Autowired;

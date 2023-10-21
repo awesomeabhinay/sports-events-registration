@@ -1,4 +1,4 @@
-package com.intuit.sportseventsregistration.entities;
+package com.intuit.sportseventsregistration.dto;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

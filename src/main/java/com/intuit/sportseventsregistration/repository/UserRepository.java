@@ -1,6 +1,6 @@
 package com.intuit.sportseventsregistration.repository;
 
-import com.intuit.sportseventsregistration.entities.User;
+import com.intuit.sportseventsregistration.dto.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

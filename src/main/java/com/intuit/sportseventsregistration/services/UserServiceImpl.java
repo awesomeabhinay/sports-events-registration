@@ -1,11 +1,10 @@
 package com.intuit.sportseventsregistration.services;
 
-import com.intuit.sportseventsregistration.entities.User;
+import com.intuit.sportseventsregistration.dto.User;
 import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.mapper.UserMapper;
 import com.intuit.sportseventsregistration.repository.UserRepository;
 import com.intuit.sportseventsregistration.responses.UserResponse;
-import com.intuit.sportseventsregistration.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,8 +1,8 @@
 package com.intuit.sportseventsregistration.services;
 
-import com.intuit.sportseventsregistration.entities.Event;
-import com.intuit.sportseventsregistration.entities.EventRegistration;
-import com.intuit.sportseventsregistration.entities.User;
+import com.intuit.sportseventsregistration.dto.Event;
+import com.intuit.sportseventsregistration.dto.EventRegistration;
+import com.intuit.sportseventsregistration.dto.User;
 import com.intuit.sportseventsregistration.exceptions.EventException;
 import com.intuit.sportseventsregistration.mapper.EventRegistrationMapper;
 import com.intuit.sportseventsregistration.repository.EventRegistrationRepository;

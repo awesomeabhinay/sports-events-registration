@@ -1,9 +1,8 @@
 package com.intuit.sportseventsregistration.mapper;
 
-import com.intuit.sportseventsregistration.entities.Event;
-import com.intuit.sportseventsregistration.entities.EventRegistration;
-import com.intuit.sportseventsregistration.entities.User;
-import com.intuit.sportseventsregistration.requests.EventRegistrationRequest;
+import com.intuit.sportseventsregistration.dto.Event;
+import com.intuit.sportseventsregistration.dto.EventRegistration;
+import com.intuit.sportseventsregistration.dto.User;
 import com.intuit.sportseventsregistration.responses.EventRegistrationResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

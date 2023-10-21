@@ -1,6 +1,5 @@
 package com.intuit.sportseventsregistration.services;
 
-import com.intuit.sportseventsregistration.entities.User;
 import com.intuit.sportseventsregistration.requests.LoginRequest;
 import com.intuit.sportseventsregistration.responses.UserResponse;
 

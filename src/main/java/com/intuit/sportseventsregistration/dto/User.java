@@ -1,4 +1,4 @@
-package com.intuit.sportseventsregistration.entities;
+package com.intuit.sportseventsregistration.dto;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,15 +9,17 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "event_registration")
-public class EventRegistration {
+@Table(name = "users")
+public class User {
 
     @Id
     @Column(columnDefinition = "INTEGER(11)")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
-    @ManyToOne
-    User user;
-    @ManyToOne
-    Event event;
+
+    @Column
+    String username;
+
+    @Column
+    String email;
 }

@@ -1,9 +1,8 @@
 package com.intuit.sportseventsregistration.controllers;
 
-import com.intuit.sportseventsregistration.entities.User;
+import com.intuit.sportseventsregistration.dto.User;
 import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.services.UserService;
-import com.intuit.sportseventsregistration.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,6 @@
 package com.intuit.sportseventsregistration.services;
 
-import com.intuit.sportseventsregistration.entities.Event;
-import com.intuit.sportseventsregistration.entities.User;
+import com.intuit.sportseventsregistration.dto.Event;
 
 import java.util.List;
 
