@@ -29,4 +29,10 @@ public class Event {
 
     @Column(name = "end_time")
     ZonedDateTime endTime;
+
+    @Column(name = "max_registration_limit")
+    int maxRegistrationLimit;
+
+    @Column(name = "current_registration_count")
+    int currentRegistrationCount;
 }

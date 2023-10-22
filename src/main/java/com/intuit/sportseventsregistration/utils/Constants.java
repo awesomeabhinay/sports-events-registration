@@ -9,4 +9,6 @@ public interface Constants {
     String EVENT_NOT_FOUND = "Event with %s id not found";
     String USER_CREATION_ERROR_MESSAGE = "Exception while creating user with username: %s";
     String LOGIN_ERROR_MESSAGE = "Exception while login with username: %s";
+    String UNREGISTER = "UNREGISTER";
+    String REGISTER = "REGISTER";
 }

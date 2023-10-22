@@ -29,20 +29,34 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
     private final EventRegistrationMapper eventRegistrationMapper;
     @Override
     public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) {
+        Event eventToRegister = eventRepository.findById(eventRegistrationRequest.getEventId())
+                .orElseThrow(() -> new EventException("Event not found"));
+        if(eventToRegister.getCurrentRegistrationCount()==eventToRegister.getMaxRegistrationLimit()){
+            throw new EventException("Sorry this event is fully booked.");
+        }
         Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
         if (user.isPresent() && !checkIfUserCanRegisterMore(user.get())) {
             throw new EventException("Participants can only register for maximum of " + Constants.MAX_REGISTRATION_LIMIT + " events");
         }
-        Event eventToRegister = eventRepository.findById(eventRegistrationRequest.getEventId())
-                .orElseThrow(() -> new EventException("Event not found"));
 
         if (hasConflicts(user.get(), eventToRegister)) {
             throw new EventException("Event registration conflicts with existing registered event.");
         }
 
         EventRegistration eventRegistration = eventRegistrationMapper.toDto(eventToRegister, user.get());
-        return eventRegistrationMapper.toEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
+        EventRegistrationResponse eventRegistrationResponse = eventRegistrationMapper.toEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
+        updateEventRegistrationCount(eventToRegister, Constants.REGISTER);
+        return eventRegistrationResponse;
+    }
+
+    private void updateEventRegistrationCount(Event eventToRegister, String type) {
+        if(Constants.UNREGISTER.equals(type)){
+            eventToRegister.setCurrentRegistrationCount(eventToRegister.getCurrentRegistrationCount()-1);
+        } else {
+            eventToRegister.setCurrentRegistrationCount(eventToRegister.getCurrentRegistrationCount()+1);
+        }
+        eventRepository.save(eventToRegister);
     }
 
     private boolean hasConflicts(User user, Event eventToRegister) {
@@ -68,6 +82,9 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
         EventRegistration eventRegistration = fetchEventRegistration(eventUnregisterRequest);
         if(eventRegistration!=null){
             eventRegistrationRepository.delete(eventRegistration);
+            Event eventToUnregister = eventRepository.findById(eventUnregisterRequest.getEventId())
+                    .orElseThrow(() -> new EventException("Event not found"));
+            updateEventRegistrationCount(eventToUnregister, Constants.UNREGISTER);
             return String.format("Event %s unregistered for %s",eventRegistration.getEvent().getEventName(),
                     eventRegistration.getUser().getUsername());
         } else {
