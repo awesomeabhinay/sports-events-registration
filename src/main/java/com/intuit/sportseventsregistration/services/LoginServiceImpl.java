@@ -6,22 +6,18 @@ import com.intuit.sportseventsregistration.mapper.UserMapper;
 import com.intuit.sportseventsregistration.repository.UserRepository;
 import com.intuit.sportseventsregistration.requests.LoginRequest;
 import com.intuit.sportseventsregistration.responses.UserResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService{
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
-
-    @Autowired
-    public LoginServiceImpl(UserRepository userRepository, UserMapper userMapper){
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-    }
 
     @Override
     public UserResponse loginUser(LoginRequest loginRequest) {

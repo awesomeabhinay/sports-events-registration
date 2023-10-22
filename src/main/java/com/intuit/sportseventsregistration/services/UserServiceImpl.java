@@ -5,22 +5,19 @@ import com.intuit.sportseventsregistration.exceptions.UserException;
 import com.intuit.sportseventsregistration.mapper.UserMapper;
 import com.intuit.sportseventsregistration.repository.UserRepository;
 import com.intuit.sportseventsregistration.responses.UserResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
 
-    private UserRepository userRepository;
-    private UserMapper userMapper;
-    @Autowired
-    UserServiceImpl(UserRepository userRepository, UserMapper userMapper){
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-    }
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     @Override
     public UserResponse createUser(User user) {
         if(!checkIfUserExist(user.getUsername())){

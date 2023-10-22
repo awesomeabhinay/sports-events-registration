@@ -12,30 +12,23 @@ import com.intuit.sportseventsregistration.requests.EventRegistrationRequest;
 import com.intuit.sportseventsregistration.requests.EventUnregisterRequest;
 import com.intuit.sportseventsregistration.responses.EventRegistrationResponse;
 import com.intuit.sportseventsregistration.utils.Constants;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class EventRegistrationServiceImpl implements EventRegistrationService{
 
     private final EventRegistrationRepository eventRegistrationRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final EventRegistrationMapper eventRegistrationMapper;
-    @Autowired
-    public EventRegistrationServiceImpl(EventRegistrationRepository eventRegistrationRepository, EventRepository eventRepository,
-                                        UserRepository userRepository, EventRegistrationMapper eventRegistrationMapper){
-        this.eventRegistrationRepository = eventRegistrationRepository;
-        this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
-        this.eventRegistrationMapper = eventRegistrationMapper;
-    }
     @Override
-    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) throws Exception {
+    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) {
         Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
         if (user.isPresent() && !checkIfUserCanRegisterMore(user.get())) {
@@ -56,7 +49,7 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
         List<Event> userRegisteredEvents = eventRegistrationRepository.findAllByUser(user)
                 .stream()
                 .map(EventRegistration::getEvent)
-                .collect(Collectors.toList());
+                .toList();
         for (Event registeredEvent : userRegisteredEvents) {
             if (doEventsOverlap(eventToRegister, registeredEvent)) {
                 return true;
@@ -68,18 +61,6 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
     private boolean doEventsOverlap(Event event1, Event event2) {
         return event1.getEndTime().isAfter(event2.getStartTime()) &&
                 event2.getEndTime().isAfter(event1.getStartTime());
-    }
-
-
-    private EventRegistrationResponse successFullEventRegistrationResponse(EventRegistration eventRegistration) {
-        return new EventRegistrationResponse(eventRegistration.getId(), eventRegistration.getEvent().getId(), eventRegistration.getUser().getUsername());
-    }
-
-    private EventRegistration createEventRegistration(User user, EventRegistrationRequest eventRegistrationRequest) {
-        EventRegistration eventRegistration = new EventRegistration();
-        eventRegistration.setUser(user);
-        eventRegistration.setEvent(eventRepository.getReferenceById(eventRegistrationRequest.getEventId()));
-        return eventRegistration;
     }
 
     @Override
