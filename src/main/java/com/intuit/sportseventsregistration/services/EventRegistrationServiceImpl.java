@@ -1,5 +1,6 @@
 package com.intuit.sportseventsregistration.services;
 
+import com.intuit.sportseventsregistration.config.DistributedLockManager;
 import com.intuit.sportseventsregistration.dto.Event;
 import com.intuit.sportseventsregistration.dto.EventRegistration;
 import com.intuit.sportseventsregistration.dto.User;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,27 +30,34 @@ public class EventRegistrationServiceImpl implements EventRegistrationService{
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final EventRegistrationMapper eventRegistrationMapper;
+    private final DistributedLockManager distributedLockManager;
     @Override
-    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) {
-        Event eventToRegister = eventRepository.findById(eventRegistrationRequest.getEventId())
-                .orElseThrow(() -> new EventException("Event not found"));
-        if(eventToRegister.getCurrentRegistrationCount()==eventToRegister.getMaxRegistrationLimit()){
-            throw new EventException("Sorry this event is fully booked.");
-        }
-        Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
+    public EventRegistrationResponse registerEvent(EventRegistrationRequest eventRegistrationRequest) throws InterruptedException, TimeoutException {
+        String lockKey = "event:" + eventRegistrationRequest.getEventId();
+        distributedLockManager.acquireLock(lockKey);
+        try{
+            Event eventToRegister = eventRepository.findById(eventRegistrationRequest.getEventId())
+                    .orElseThrow(() -> new EventException("Event not found"));
+            if(eventToRegister.getCurrentRegistrationCount()==eventToRegister.getMaxRegistrationLimit()){
+                throw new EventException("Sorry this event is fully booked.");
+            }
+            Optional<User> user = userRepository.findByUsername(eventRegistrationRequest.getUsername());
 
-        if (user.isPresent() && !checkIfUserCanRegisterMore(user.get())) {
-            throw new EventException("Participants can only register for maximum of " + Constants.MAX_REGISTRATION_LIMIT + " events");
-        }
+            if (user.isPresent() && !checkIfUserCanRegisterMore(user.get())) {
+                throw new EventException("Participants can only register for maximum of " + Constants.MAX_REGISTRATION_LIMIT + " events");
+            }
 
-        if (hasConflicts(user.get(), eventToRegister)) {
-            throw new EventException("Event registration conflicts with existing registered event.");
-        }
+            if (hasConflicts(user.get(), eventToRegister)) {
+                throw new EventException("Event registration conflicts with existing registered event.");
+            }
 
-        EventRegistration eventRegistration = eventRegistrationMapper.toDto(eventToRegister, user.get());
-        EventRegistrationResponse eventRegistrationResponse = eventRegistrationMapper.toEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
-        updateEventRegistrationCount(eventToRegister, Constants.REGISTER);
-        return eventRegistrationResponse;
+            EventRegistration eventRegistration = eventRegistrationMapper.toDto(eventToRegister, user.get());
+            EventRegistrationResponse eventRegistrationResponse = eventRegistrationMapper.toEventRegistrationResponse(eventRegistrationRepository.save(eventRegistration));
+            updateEventRegistrationCount(eventToRegister, Constants.REGISTER);
+            return eventRegistrationResponse;
+        } finally {
+            distributedLockManager.releaseLock(lockKey);
+        }
     }
 
     private void updateEventRegistrationCount(Event eventToRegister, String type) {

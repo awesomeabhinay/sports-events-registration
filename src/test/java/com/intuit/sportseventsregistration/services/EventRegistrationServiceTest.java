@@ -1,5 +1,6 @@
 package com.intuit.sportseventsregistration.services;
 
+import com.intuit.sportseventsregistration.config.DistributedLockManager;
 import com.intuit.sportseventsregistration.dto.Event;
 import com.intuit.sportseventsregistration.dto.EventRegistration;
 import com.intuit.sportseventsregistration.dto.User;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,6 +45,9 @@ public class EventRegistrationServiceTest {
     @Mock
     private EventRegistrationMapper eventRegistrationMapper;
 
+    @Mock
+    private DistributedLockManager distributedLockManager;
+
     @InjectMocks
     private EventRegistrationServiceImpl eventRegistrationService;
 
@@ -52,7 +57,7 @@ public class EventRegistrationServiceTest {
     }
 
     @Test
-    public void testRegisterEvent_Success() {
+    public void testRegisterEvent_Success() throws InterruptedException, TimeoutException {
         EventRegistrationRequest request = new EventRegistrationRequest();
         request.setEventId(1);
         request.setUsername("testuser");
@@ -64,6 +69,8 @@ public class EventRegistrationServiceTest {
         event.setStartTime(ZonedDateTime.now().plusHours(2));
         event.setEndTime(ZonedDateTime.now().plusHours(3));
         event.setId(1);
+        event.setMaxRegistrationLimit(10);
+        event.setCurrentRegistrationCount(1);
 
         EventRegistration registration = new EventRegistration();
         registration.setEvent(event);
@@ -85,20 +92,23 @@ public class EventRegistrationServiceTest {
     }
 
     @Test
-    public void testRegisterEvent_UserAlreadyRegisteredForMaxEvents() {
+    public void testRegisterEvent_UserAlreadyRegisteredForMaxEvents() throws InterruptedException, TimeoutException {
         EventRegistrationRequest request = new EventRegistrationRequest();
         request.setEventId(1);
         request.setUsername("testuser");
 
         User user = new User();
         user.setUsername("testuser");
-
+        Event event = new Event();
+        event.setCurrentRegistrationCount(1);
+        event.setMaxRegistrationLimit(10);
+        Mockito.when(eventRepository.findById(anyInt())).thenReturn(Optional.of(event));
         Mockito.when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         Mockito.when(eventRegistrationRepository.countByUser(user)).thenReturn(Constants.MAX_REGISTRATION_LIMIT);
 
         try {
             eventRegistrationService.registerEvent(request);
-        } catch (EventException ex) {
+        } catch (EventException | InterruptedException | TimeoutException ex) {
             assertEquals("Participants can only register for maximum of 3 events", ex.getMessage());
         }
     }
