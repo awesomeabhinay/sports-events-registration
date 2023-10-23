@@ -10,57 +10,48 @@ Viewing a list of events for which the user has registered.
 Event cards display event name, category, timings, and registration buttons.
 Error handling and notifications.
 
-# Architecture
+## Architecture
 The system follows a client-server architecture, with the frontend built using ReactJS and the backend implemented with Java and Spring Boot. Below is a high-level diagram of the system architecture:
 
 System Architecture
 
-# Backend API Endpoints
+## Backend API Endpoints
 The backend provides the following API endpoints:
 
-Create User
-
+### Create User
 POST /user/create
-Login User
 
+### Login User
 POST /user/login
-Get All Events List
 
+### Get All Events List
 GET /events/all
-Get All Registered Events List
 
+### Get All Registered Events List
 GET /events/{username}
-Register Event
 
+### Register Event
 POST /event/register
-Unregister Event
 
+### Unregister Event
 DELETE /event/unregister
-Installation and Setup
+
+## Installation and Setup
 Clone this repository:
 
-bash
-Copy code
-git clone https://github.com/yourusername/sports-event-registration.git
+### UI Setup
+`git clone https://github.com/awesomeabhinay/sports-events-registration-ui.git`
+
 Navigate to the project directory:
 
-bash
-Copy code
 cd sports-event-registration
-Frontend Setup:
 
-Install frontend dependencies:
+Install frontend dependencies: `npm install`
 
-bash
-Copy code
-cd frontend
-npm install
-Start the React development server:
+Start the React development server: `npm start`
 
-sql
-Copy code
-npm start
-Backend Setup:
+### Backend Setup:
+`git clone https://github.com/awesomeabhinay/sports-events-registration-ui.git`
 
 Install Java and Spring Boot dependencies.
 
