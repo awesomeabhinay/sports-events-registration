@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = SportsEventsRegistrationApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class IntegrationTesting {
+public class SportsEventsRegistrationIT {
     @LocalServerPort
     private int port;
     TestRestTemplate restTemplate = new TestRestTemplate();
