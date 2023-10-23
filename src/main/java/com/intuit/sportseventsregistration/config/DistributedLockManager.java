@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,7 +16,7 @@ public class DistributedLockManager {
         locks = new ConcurrentHashMap<>();
     }
 
-    public void acquireLock(String lockKey) throws InterruptedException, TimeoutException {
+    public void acquireLock(String lockKey) throws InterruptedException {
         Lock lock = locks.computeIfAbsent(lockKey, key -> new ReentrantLock());
         lock.lockInterruptibly();
     }
